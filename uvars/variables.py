@@ -1,4 +1,4 @@
 import os
 
-uvarsfile = os.path.expanduser("~/.uvars")
-uvarsdirectory = os.path.expanduser("~/.uvars.d")
+ufilepath = os.path.expanduser("~/.uvars")
+udirpath = os.path.expanduser("~/.uvars.d")
