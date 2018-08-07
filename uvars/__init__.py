@@ -1,49 +1,57 @@
 version = "0.0.2"
 
 import os
+import json
 from uvars.variables import *
 
-def readfile(tgtdict, path):
-	with open(path) as of:
-		lines = of.readlines()
-		for idx, l in enumerate(lines):
-			splt = l.split('=')
-			if len(splt) != 2:
-				raise Exception("File format error. (file:{}, line:{})".format(path, idx))
-			if splt[0] in tgtdict:
-				raise Exception("Repeated key. (file:{}, key:{}, line:{})".format(path, splt[0], idx))	
-			tgtdict[splt[0]] = splt[1][:-1]
+def writedict(dct, path):
+	with open(os.path.expanduser(path), 'w') as outfile:
+		json.dump(dct, outfile)
+	
 
-udict = {}
-udirs = {}
+def readdict(path):
+	file = open(os.path.expanduser(path))
+	data = json.load(file)
+	return data
 
-if os.path.exists(ufilepath): 
-	readfile(udict, ufilepath)
+class context:
+	def __init__(self, path = os.path.expanduser(os.getenv("UVARS_PATH", "~/.uvars"))):
+		self.path = path
+		self.dct = readdict(self.path)
 
-if os.path.exists(udirpath): 
-	for f in os.listdir(udirpath):
-		udirs[f] = {}	
-		readfile(udirs[f], os.path.join(udirpath, f))
+	def setvar(self, var, value):
+		tokens = var.split('.')
 
-print(udict)
+		n = self.dct
+		for l in tokens[:-1]: 
+			try:
+				n = n[l]
+			except:
+				n[l] = {}
+				n = n[l]
 
-def update(dirf = None):
-	if dirf == None: 
-		path = ufilepath
-		dct = udict
-	else: 
-		if not dirf in udirs:
-			raise Exception("unexpected dir {}".format(dirf))
-		path = os.path.join(udirpath, dirf)
-		dct = udirs[dirf]
-	with open(path, "w") as f:
-		for k, v in dct.iteritems():
-			f.write("{}={}\n".format(k, v))
+		n[tokens[-1]] = value
+		writedict(dct = self.dct, path = self.path)
 
-def setvar(key, val, dirf = None):
-	if dirf: udirs[dirf][key] = val
-	else: udict[key] = val 
-	update(dirf)
+	def getvar(self, var):		
+		tokens = var.split('.')
 
-setvar("mirmik", "good boy")
-setvar("mirmik2", "good boy2")
+		n = self.dct
+		for l in tokens: 
+			n = n[l]
+		
+		return n
+
+default_context = None
+
+def setvar(var, value):
+	global default_context
+	if default_context == None:
+		default_context = context()
+	default_context.setvar(var, value)
+
+def getvar(var):
+	global default_context
+	if default_context == None:
+		default_context = context()
+	return default_context.getvar(var)
