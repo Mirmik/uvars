@@ -17,5 +17,5 @@ setup(
 	url = 'https://github.com/mirmik/uvars',
 	keywords = ['testing', 'environment'],
 	classifiers = [],
-	scripts = [],
+	scripts = ["executable/uvars"],
 )

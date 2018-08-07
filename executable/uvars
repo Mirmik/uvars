@@ -1,5 +1,21 @@
 #!/usr/bin/python3
 
+import os
 import uvars
+import argparse
 
-print(uvars.getvar("licant.gxx"))
+parser = argparse.ArgumentParser()
+parser.add_argument('--set', dest='newvalue', help="set uvars variable's value")
+parser.add_argument('--path', dest='uvpath', help="uvars file path", default=uvars.default_path)
+parser.add_argument('--file', help="use set var as filepath", action="store_true", default=False)
+parser.add_argument("variable", help="variable ierarchy path")
+
+args = parser.parse_args()
+context = uvars.context(args.uvpath)
+
+if args.newvalue:
+	val = args.newvalue 
+	if args.file: val = os.path.abspath(val)
+	context.setvar(args.variable, val)
+else:
+	print(context.getvar(args.variable))

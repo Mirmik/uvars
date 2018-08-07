@@ -1,8 +1,9 @@
-version = "0.0.2"
+version = "0.1.1"
 
 import os
 import json
-from uvars.variables import *
+
+default_path = os.path.expanduser(os.getenv("UVARS_PATH", "~/.uvars"))
 
 def writedict(dct, path):
 	with open(os.path.expanduser(path), 'w') as outfile:
@@ -10,12 +11,15 @@ def writedict(dct, path):
 	
 
 def readdict(path):
-	file = open(os.path.expanduser(path))
+	path = os.path.expanduser(path)
+	if not os.path.exists(path):
+		return {}
+	file = open(path)
 	data = json.load(file)
 	return data
 
 class context:
-	def __init__(self, path = os.path.expanduser(os.getenv("UVARS_PATH", "~/.uvars"))):
+	def __init__(self, path = default_path):
 		self.path = path
 		self.dct = readdict(self.path)
 
